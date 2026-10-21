@@ -1,1 +1,8 @@
-anthropic>=0.40
+anthropic>=1.17
+pyyaml>=6
+openpyxl>=3.1
+pandas>=2
+streamlit>=1.40
+playwright>=1.45      # assisted apply; then run: python -m playwright install chromium
+mcp>=1.2              # optional: MCP server for Claude Desktop / Jarvis
+pytest>=8             # tests

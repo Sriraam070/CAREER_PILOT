@@ -1,0 +1,446 @@
+# Target companies, imported from your Notion "Job Tracker" (47 companies).
+# `careerpilot notion-pull` refreshes names/tiers from Notion; ATS settings here are kept.
+#
+# ats: workday | smartrecruiters | greenhouse | lever | ashby | amazon | adzuna | manual
+#  - workday/smartrecruiters/greenhouse/lever/ashby/amazon read the company's own public careers API.
+#  - adzuna searches the Adzuna job API by company name (free key) for companies without one.
+#  - manual: no automatic discovery; add jobs from the UI / `careerpilot add-job`.
+# aliases: other spellings used in job postings (matched case/space-insensitively, by prefix).
+# verified: false = best-known mapping, not yet tested. Run `careerpilot doctor` to test each one.
+# Find a company's ATS: open any job on its careers site and look at the URL
+#   (myworkdayjobs.com / boards.greenhouse.io / jobs.lever.co / smartrecruiters.com / ashbyhq.com).
+companies:
+- name: AUTO DESK
+  tiers:
+  - MARQUEE
+  careers_url: ''
+  ats: workday
+  params:
+    host: autodesk.wd1.myworkdayjobs.com
+    tenant: autodesk
+    site: Ext
+  verified: false
+  aliases:
+  - Autodesk
+- name: CAW STUDIOS
+  tiers:
+  - NEW
+  - PRIME
+  careers_url: ''
+  ats: adzuna
+  params:
+    company: Caw Studios
+  verified: false
+- name: Infineon Technologies
+  tiers:
+  - PRIME
+  careers_url: ''
+  ats: adzuna
+  params:
+    company: Infineon Technologies
+  verified: false
+- name: COGNIZANT
+  tiers:
+  - DAY SHARING
+  careers_url: https://careers.cognizant.com/in/en
+  ats: adzuna
+  params:
+    company: Cognizant
+  verified: false
+- name: BARCLAYS
+  tiers:
+  - SUPER DREAM
+  careers_url: ''
+  ats: adzuna
+  params:
+    company: Barclays
+  verified: false
+- name: ACCENTURE
+  tiers:
+  - DAY SHARING
+  careers_url: https://www.accenture.com/in-en/careers
+  ats: adzuna
+  params:
+    company: Accenture
+  verified: false
+- name: CAPGEMINI
+  tiers:
+  - DAY SHARING
+  careers_url: https://www.capgemini.com/in-en/careers/
+  ats: adzuna
+  params:
+    company: Capgemini
+  verified: false
+- name: MPHASIS
+  tiers:
+  - DAY SHARING
+  careers_url: ''
+  ats: adzuna
+  params:
+    company: Mphasis
+  verified: false
+- name: Volante Technologies
+  tiers:
+  - PRIME
+  careers_url: ''
+  ats: adzuna
+  params:
+    company: Volante Technologies
+  verified: false
+- name: LTI MINDTREE
+  tiers:
+  - DAY SHARING
+  careers_url: ''
+  ats: adzuna
+  params:
+    company: LTIMindtree
+  verified: false
+  aliases:
+  - LTIMindtree
+- name: HCL
+  tiers:
+  - DAY SHARING
+  careers_url: ''
+  ats: adzuna
+  params:
+    company: HCLTech
+  verified: false
+  aliases:
+  - HCLTech
+  - HCL Technologies
+- name: HEXAWARE
+  tiers:
+  - DREAM
+  careers_url: ''
+  ats: adzuna
+  params:
+    company: Hexaware
+  verified: false
+- name: TECH MAHINDRA
+  tiers:
+  - DAY SHARING
+  careers_url: ''
+  ats: adzuna
+  params:
+    company: Tech Mahindra
+  verified: false
+- name: L&T TECH
+  tiers:
+  - DAY SHARING
+  careers_url: ''
+  ats: adzuna
+  params:
+    company: L&T Technology Services
+  verified: false
+  aliases:
+  - L&T Technology Services
+  - LTTS
+- name: Informatica
+  tiers:
+  - PRIME
+  careers_url: ''
+  ats: adzuna
+  params:
+    company: Informatica
+  verified: false
+- name: WIPRO
+  tiers:
+  - DAY SHARING
+  careers_url: https://careers.wipro.com/
+  ats: adzuna
+  params:
+    company: Wipro
+  verified: false
+- name: JUSPAY
+  tiers:
+  - MARQUEE
+  careers_url: https://juspay.io/careers
+  ats: adzuna
+  params:
+    company: Juspay
+  verified: false
+- name: TCS
+  tiers:
+  - DAY SHARING
+  careers_url: https://ibegin.tcs.com/iBegin/
+  ats: adzuna
+  params:
+    company: Tata Consultancy Services
+  verified: false
+  aliases:
+  - Tata Consultancy Services
+- name: INFOSYS
+  tiers:
+  - DAY SHARING
+  careers_url: https://career.infosys.com/
+  ats: adzuna
+  params:
+    company: Infosys
+  verified: false
+- name: BHAWAN CYBER TECH
+  tiers:
+  - DREAM
+  careers_url: ''
+  ats: adzuna
+  params:
+    company: Bhavan Cyber Tech
+  verified: false
+  aliases:
+  - Bhavan Cyber Tech
+- name: ADOBE
+  tiers:
+  - MARQUEE
+  careers_url: ''
+  ats: workday
+  params:
+    host: adobe.wd5.myworkdayjobs.com
+    tenant: adobe
+    site: external_experienced
+  verified: false
+- name: FORD
+  tiers:
+  - DREAM
+  careers_url: ''
+  ats: adzuna
+  params:
+    company: Ford
+  verified: false
+  aliases:
+  - Ford Motor
+- name: FRESHWORKS
+  tiers:
+  - SUPER DREAM
+  careers_url: https://careers.smartrecruiters.com/Freshworks
+  ats: smartrecruiters
+  params:
+    company_id: Freshworks
+    country: in
+  verified: false
+- name: ZS ASSOCIATES
+  tiers:
+  - DREAM
+  careers_url: ''
+  ats: adzuna
+  params:
+    company: Zs Associates
+  verified: false
+- name: SALESFORCE
+  tiers:
+  - MARQUEE
+  careers_url: ''
+  ats: workday
+  params:
+    host: salesforce.wd12.myworkdayjobs.com
+    tenant: salesforce
+    site: External_Career_Site
+  verified: false
+- name: AMEX
+  tiers:
+  - SUPER DREAM
+  careers_url: ''
+  ats: adzuna
+  params:
+    company: American Express
+  verified: false
+  aliases:
+  - American Express
+- name: EY-GDS
+  tiers:
+  - DREAM
+  careers_url: ''
+  ats: adzuna
+  params:
+    company: EY
+  verified: false
+  aliases:
+  - EY
+  - Ernst & Young
+- name: KISSFLOW
+  tiers:
+  - PRIME
+  careers_url: https://kissflow.com/careers/
+  ats: adzuna
+  params:
+    company: Kissflow
+  verified: false
+- name: DELOITTE
+  tiers:
+  - DREAM
+  careers_url: ''
+  ats: adzuna
+  params:
+    company: Deloitte
+  verified: false
+- name: Walmart
+  tiers:
+  - MARQUEE
+  careers_url: ''
+  ats: workday
+  params:
+    host: walmart.wd5.myworkdayjobs.com
+    tenant: walmart
+    site: WalmartExternal
+  verified: false
+  aliases:
+  - Walmart Global Tech
+- name: VISA
+  tiers:
+  - SUPER DREAM
+  careers_url: https://corporate.visa.com/en/jobs/
+  ats: smartrecruiters
+  params:
+    company_id: Visa
+    country: in
+  verified: false
+- name: PAYPAL
+  tiers:
+  - SUPER DREAM
+  careers_url: ''
+  ats: workday
+  params:
+    host: paypal.wd1.myworkdayjobs.com
+    tenant: paypal
+    site: jobs
+  verified: false
+- name: ATOS
+  tiers:
+  - DAY SHARING
+  careers_url: ''
+  ats: adzuna
+  params:
+    company: Atos
+  verified: false
+- name: TRIMBLE
+  tiers:
+  - DREAM
+  careers_url: ''
+  ats: workday
+  params:
+    host: trimble.wd1.myworkdayjobs.com
+    tenant: trimble
+    site: TrimbleCareers
+  verified: false
+- name: VYSH GYANA
+  tiers:
+  - PRIME
+  careers_url: ''
+  ats: adzuna
+  params:
+    company: Vish Gyana
+  verified: false
+  aliases:
+  - Vish Gyana
+  - Vishgyana
+- name: CGI
+  tiers:
+  - DREAM
+  careers_url: ''
+  ats: adzuna
+  params:
+    company: Cgi
+  verified: false
+- name: MICROSOFT
+  tiers:
+  - MARQUEE
+  careers_url: https://jobs.careers.microsoft.com/global/en/search?lc=India
+  ats: adzuna
+  params:
+    company: Microsoft
+  verified: false
+- name: MASTER CARD
+  tiers:
+  - SUPER DREAM
+  careers_url: ''
+  ats: workday
+  params:
+    host: mastercard.wd1.myworkdayjobs.com
+    tenant: mastercard
+    site: CorporateCareers
+  verified: false
+  aliases:
+  - Mastercard
+- name: ZUPER
+  tiers:
+  - PRIME
+  careers_url: https://www.zuper.co/careers
+  ats: adzuna
+  params:
+    company: Zuper
+  verified: false
+- name: AMAZON
+  tiers:
+  - MARQUEE
+  careers_url: https://www.amazon.jobs/en/locations/india
+  ats: amazon
+  params:
+    country: IND
+  verified: false
+  aliases:
+  - Amazon
+- name: GOOGLE
+  tiers:
+  - MARQUEE
+  careers_url: https://www.google.com/about/careers/applications/jobs/results/?location=India
+  ats: adzuna
+  params:
+    company: Google
+  verified: false
+  aliases:
+  - Google
+- name: KPMG
+  tiers:
+  - DREAM
+  careers_url: ''
+  ats: adzuna
+  params:
+    company: Kpmg
+  verified: false
+- name: PWC
+  tiers:
+  - DREAM
+  careers_url: ''
+  ats: adzuna
+  params:
+    company: PwC
+  verified: false
+  aliases:
+  - PricewaterhouseCoopers
+- name: ORACLE
+  tiers:
+  - SUPER DREAM
+  careers_url: https://careers.oracle.com/
+  ats: adzuna
+  params:
+    company: Oracle
+  verified: false
+- name: APP GLIDE
+  tiers:
+  - NEW
+  - DREAM
+  careers_url: ''
+  ats: adzuna
+  params:
+    company: AppGlide
+  verified: false
+  aliases:
+  - AppGlide
+- name: ZOHO
+  tiers:
+  - SUPER DREAM
+  careers_url: https://careers.zohocorp.com/
+  ats: adzuna
+  params:
+    company: Zoho
+  verified: false
+  aliases:
+  - Zoho Corporation
+- name: COMCAST
+  tiers:
+  - DREAM
+  careers_url: ''
+  ats: workday
+  params:
+    host: comcast.wd5.myworkdayjobs.com
+    tenant: comcast
+    site: Comcast_Careers
+  verified: false

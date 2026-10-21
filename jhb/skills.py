@@ -119,7 +119,7 @@ _COMPILED = {
 REQ_HDR = re.compile(r"(require|must|qualif|what you.ll need|you have|who you are|minimum|basic|responsibil|what you.ll do)", re.I)
 NICE_HDR = re.compile(r"(nice|bonus|preferred|plus|good to have|desirable|extra credit)", re.I)
 
-YEARS = re.compile(r"(\d+)\s*\+?\s*(?:-\s*\d+\s*)?years?", re.I)
+YEARS = re.compile(r"(\d+)\s*\+?\s*(?:(?:-|–|—|to)\s*\d+\s*\+?\s*)?(?:years?|yrs?)\b", re.I)  # "2-5 years" → 2
 
 
 def _sections(text):

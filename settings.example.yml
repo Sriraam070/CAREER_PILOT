@@ -1,0 +1,27 @@
+profile:
+  name: Your Name
+  email: you@example.com
+  phone: ''
+  location: Chennai
+  linkedin: 
+  github: 
+  years_experience: 2.5
+  resume_path: resume.pdf
+preferences:
+  target_roles: [Python Developer, Django Developer, Backend Developer, Software Engineer]
+  keywords: [python, django, backend, software engineer, software developer, associate software engineer, sde]
+  exclude_keywords: [senior staff, principal, director, manager, lead, architect, intern]
+  locations: [Chennai, Bangalore, Bengaluru, Hyderabad, Pune, Coimbatore, Remote, India]
+  max_years_required: 4
+  min_salary_lpa: null
+  company_tiers: [MARQUEE, SUPER DREAM, DREAM, PRIME, NEW, DAY SHARING]
+  min_match_to_notify: 50
+  min_match_to_queue: 60
+automation:
+  discover: true
+  queue_for_approval: true
+  auto_submit_simple_forms: false
+  notify_email: false
+  notify_whatsapp: false
+  check_inbox: false
+  notion_sync: false

@@ -3,7 +3,7 @@ import json
 import os
 import re
 
-MODEL = os.environ.get("JHB_MODEL", "claude-sonnet-5-5")
+MODEL = os.environ.get("JHB_MODEL", "claude-opus-5-5")
 
 SYSTEM = """You are Job Hunt Bot, a candid career coach and recruiter-whisperer.
 Rules:
@@ -17,20 +17,13 @@ Rules:
 
 
 def available():
-    return bool(os.environ.get("ANTHROPIC_API_KEY"))
+    from careerpilot import ai
+    return ai.available()
 
 
-def ask(prompt, max_tokens=4000):
-    import anthropic  # imported lazily so zero-LLM commands work without it
-
-    client = anthropic.Anthropic()
-    msg = client.messages.create(
-        model=MODEL,
-        max_tokens=max_tokens,
-        system=SYSTEM,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return "".join(b.text for b in msg.content if b.type == "text").strip()
+def ask(prompt, max_tokens=16000):
+    from careerpilot import ai  # imported lazily so zero-LLM commands work without the SDK
+    return ai.ask(prompt, system=SYSTEM, max_tokens=max_tokens)
 
 
 def ask_json(prompt, max_tokens=4000):

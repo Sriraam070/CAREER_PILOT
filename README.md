@@ -1,308 +1,483 @@
-# 🎯 Job Hunt Bot
+# 🧭 CareerPilot
 
-**An AI job hunter powered by Claude.** You collect job descriptions and the bot:
+**An AI-powered job search and application assistant built on Claude.**
 
-1. **Finds the most-asked skills** across all of them.
-2. **Compares them with your CV** to show what you have, what you under-sell, and what you're missing.
-3. **Builds a prep plan:** a 4-week skill-gap roadmap and interview questions.
-4. **Grades each job** (A–F) so you know whether it's worth applying.
-5. **Writes your recruiter message:** a LinkedIn note, a DM, a cold email and a follow-up.
-6. **Tracks your applications.**
+You give it your shortlist of target companies (from Notion) and your CV. It then:
 
-> Inspired by [career-ops](https://github.com/career-ops-hq/career-ops). Apply better to fewer jobs. The bot drafts and **you** hit send.
+- 🔎 **Finds openings** at those companies every day.
+- 📊 **Scores each job** against your skills and preferences.
+- ✅ **Queues good matches** for your approval.
+- 📝 **Pre-fills applications** while you stay in control.
+- 📬 **Tracks every status change** by reading your inbox.
+- 🔔 **Notifies you** on Gmail and WhatsApp.
+- 📈 **Builds Excel and Power BI reports** on the job market and your pipeline.
+- 🎤 **Prepares you for interviews** at each company.
 
----
+You can drive all of it from a **chat interface**.
 
-## 📑 Table of contents
-- [Quick start](#-quick-start-5-minutes)
-- [Step-by-step usage](#-step-by-step-usage)
-- [All commands](#-all-commands)
-- [Using it inside Claude Code (no API key)](#-using-it-inside-claude-code-no-api-key-needed)
-- [Example output](#-example-output)
-- [How the skill analysis works](#-how-the-skill-analysis-works)
-- [Project structure](#-project-structure)
-- [Customising](#-customising)
-- [Tips for landing interviews](#-tips-for-landing-interviews)
-- [FAQ / troubleshooting](#-faq--troubleshooting)
+> Inspired by [career-ops](https://github.com/career-ops-hq/career-ops). Built so it can later plug into a bigger personal assistant ("Jarvis") as a module; see [Jarvis integration](#-jarvis--claude-desktop-integration-mcp).
+
+![Dashboard](docs/dashboard.png)
 
 ---
 
-## 🚀 Quick start (5 minutes)
-
-### 1. Get the code
-```bash
-git clone https://github.com/Sriraam070/job-hunt-bot.git
-cd job-hunt-bot
-pip install -r requirements.txt
-```
-You need Python 3.9 or newer. The `anthropic` package is only needed for the Claude-powered commands.
-
-### 2. Add your details
-```bash
-cp cv.example.md cv.md
-cp profile.example.yml profile.yml
-```
-- **`cv.md`**: paste your CV as plain Markdown. **Keep a `## Skills` section**, because the bot uses it to decide whether you "have" a skill.
-- **`profile.yml`**: your target roles, locations, salary, notice period, work authorisation and the tone you want for messages.
-
-Both files are git-ignored, so your personal data never gets pushed.
-
-### 3. Connect Claude (optional)
-```bash
-export ANTHROPIC_API_KEY=sk-ant-...   # get one at console.anthropic.com
-```
-You can skip this. The skills report works without a key, and every other feature works through [Claude Code](#-using-it-inside-claude-code-no-api-key-needed) or by copy-pasting into claude.ai.
-
-### 4. Add jobs and run
-```bash
-                                                       # (samples live in examples/jds/)
-python3 -m jhb add https://company.com/careers/ai-engineer
-python3 -m jhb skills                                  # most-asked skills + your gaps
-python3 -m jhb message ai-engineer --to recruiter      # recruiter message
-```
-
-> 💡 `./jhb.sh <command>` is a shortcut for `python3 -m jhb <command>`.
+## 📑 Contents
+1. [What it does](#-what-it-does)
+2. [How it works](#-how-it-works)
+3. [Setup (15 min)](#-setup-15-minutes)
+4. [Daily use](#-daily-use)
+5. [The web app](#-the-web-app)
+6. [Applying: the review-and-approve flow](#-applying-the-review-and-approve-flow)
+7. [Reports (Excel & Power BI)](#-reports-excel--power-bi)
+8. [Notifications (Gmail & WhatsApp)](#-notifications-gmail--whatsapp)
+9. [Status tracking from your inbox](#-status-tracking-from-your-inbox)
+10. [Interview preparation](#-interview-preparation)
+11. [Notion sync](#-notion-sync)
+12. [Job sources & companies.yml](#-job-sources--companiesyml)
+13. [Scheduling (run it every day)](#-scheduling-run-it-every-day)
+14. [Jarvis / Claude Desktop integration (MCP)](#-jarvis--claude-desktop-integration-mcp)
+15. [Privacy & security](#-privacy--security)
+16. [All commands](#-all-commands)
+17. [Limitations (read this)](#-limitations-read-this)
+18. [Troubleshooting](#-troubleshooting)
+19. [JD toolkit (skills report, recruiter messages)](#-jd-toolkit)
 
 ---
 
-## 🧭 Step-by-step usage
+## ✨ What it does
 
-### Step 1: Collect job descriptions
-Aim for **10–20 JDs** for the roles you want. The more you add, the more reliable the "most-asked skills" ranking gets.
-
-```bash
-# From a URL
-python3 -m jhb add https://boards.greenhouse.io/company/jobs/12345
-
-# From pasted text (Mac: pbpaste, Linux: xclip -o, or type and press Ctrl+D)
-pbpaste | python3 -m jhb add - --name razorpay-backend
-
-# From a file
-python3 -m jhb add ~/Downloads/jd.txt --name swiggy-ml
-```
-Each JD is saved as `jds/<name>.md`. You can also create or edit these files by hand.
-
-⚠️ Some job sites (LinkedIn, Workday) load the JD with JavaScript, so `add <url>` gets almost nothing back. The bot warns you when that happens. Copy the JD text and use `add -` instead.
-
-### Step 2: Find the most-asked skills
-```bash
-python3 -m jhb skills            # keyword analysis, free and instant
-python3 -m jhb skills --ai       # + Claude reads each JD and catches extra skills
-python3 -m jhb skills --top 40   # show more rows
-```
-This writes `reports/skills-report.md` with:
-
-| Section | What it tells you |
+| Requirement | How CareerPilot does it |
 |---|---|
-| **Top skills** | Each skill, how many JDs ask for it, a demand bar, and your CV status (✅ have / 🟡 under-sold / ❌ gap) |
-| **By category** | Languages, Backend, Cloud & DevOps, Data & AI, Soft Skills… |
-| **Your biggest gaps** | Missing skills, ranked by how many JDs ask for them. **Learn these first.** |
-| **Under-sold** | Skills in your CV prose but missing from your Skills section. **Easy wins:** add them today. |
-| **Per-JD match** | Match % for each job and what's missing. **Apply to the highest matches first.** |
-| **Years asked** | Min, median and max experience the JDs require |
+| **1. Chatbot UI** | A web app with a Claude-powered chat. It can search jobs, explain companies, salaries, skills and your pipeline, generate interview prep, and change your preferences. It also has a dashboard, jobs list, approvals, reports, prep, companies and settings tabs. |
+| **2. Market reports** | An Excel workbook with charts for daily, weekly, monthly, all-time or custom date ranges. Sheets: top skills, companies hiring with positions, salary, years asked and locations, roles × technologies, per-job match %, estimated response %, skill gaps with a learning path, applications, funnel, conversion rates, rejection trends, and daily discovery. It also writes **Power BI** star-schema CSVs. |
+| **3. Discovery, applying, tracking** | Discovery uses the official public careers APIs (Workday, Greenhouse, Lever, SmartRecruiters, Ashby, Amazon), Adzuna, and your LinkedIn/Naukri alert emails. Then it does **dedupe → score → queue → you approve → pre-fill → you submit**. Statuses come from your Gmail inbox, history is kept in SQLite, and everything syncs to Notion. |
+| **4. Notifications** | Gmail (HTML email) and WhatsApp (Twilio or CallMeBot), for new matching jobs and for status changes. Each one includes the company, title, JD excerpt, link, required skills, match %, status, next step and interview date. |
+| **5. Interview prep** | A company- and role-specific pack: the company's hiring process, topics mapped to the JD, 10 mock technical Q&As drawn from your CV, 12 named coding problems by pattern, system design, behavioural STAR answers, weak areas with a 7-day plan, and questions to ask. |
+| **6. Sensitive info** | CTC, notice period, declarations, consent, e-signatures, passwords, IDs and demographic fields are **never filled and never stored**. Every application needs your approval, an audit log records every action, and the app runs locally only, with an optional password. |
 
-### Step 3: Get a preparation plan
-```bash
-python3 -m jhb prep
+---
+
+## 🏗 How it works
+
 ```
-Claude reads your skills report and CV and writes `reports/prep-plan.md`:
-- **Positioning:** a 2-line pitch matching what the market wants.
-- **4-week gap plan:** for each top gap, why it matters, how to learn it fastest, a portfolio mini-project to prove it, and how to add it to your CV honestly.
-- **CV bullet rewrites** for skills you under-sell.
-- **Interview questions** for the 6 most-asked skills, with STAR answer outlines from your CV.
-
-### Step 4: Evaluate a specific job
-```bash
-python3 -m jhb evaluate razorpay-backend
+ Notion "Job Tracker" ──pull──►  companies.yml (47 companies + tiers + job source)
+                                         │
+     Workday / Greenhouse / Lever /      ▼
+     SmartRecruiters / Ashby / Amazon ─► DISCOVER ─► dedupe ─► SCORE (skills, years, location,
+     Adzuna API / job-alert emails                              salary, tier → match % + est. response %)
+                                                                     │
+                                       below threshold ◄─────────────┤
+                                                                     ▼
+                         notify (Gmail / WhatsApp) ◄──────── APPROVAL QUEUE  ──► you: ✅ / ❌
+                                                                     │ approved
+                                                                     ▼
+                         you press Submit ◄────── ASSIST: browser opens form, fills safe fields,
+                                                  attaches resume, lists 🔒 sensitive fields for you
+                                                                     │
+   Gmail inbox ──► "received / test / interview / rejected / offer" ─► STATUS TRACKING ─► notify, Notion push
+                                                                     │
+                                                         SQLite ─► Excel + Power BI reports, chat, dashboard
 ```
-Writes `reports/razorpay-backend-evaluation.md`:
-- **Verdict:** a grade from A to F, plus APPLY / APPLY WITH PREP / SKIP.
-- A **requirement-by-requirement table** showing the evidence from your CV and how strong each match is.
-- **Top gaps**, each with a 1–2 week plan to close it.
-- **5 talking points** to lead with.
-- **Red flags** and questions to ask the recruiter.
-- **Keywords** to mirror in your CV.
 
-### Step 5: Write the recruiter message ✉️
-```bash
-# Recruiter (default): leads with hard requirements, years, location, availability
-python3 -m jhb message razorpay-backend --to recruiter --name "Priya"
+Code layout:
 
-# Hiring manager: leads with impact and their team's problem
-python3 -m jhb message razorpay-backend --to hiring-manager --name "Arjun"
-
-# Referral from an employee: warm, short, easy to say yes or no
-python3 -m jhb message razorpay-backend --to referral
-
-# Pick a channel: linkedin | email | both (default)
-python3 -m jhb message razorpay-backend --channel email
 ```
-Saved to `output/<jd>-<audience>-message.md`. You get:
-- 🔗 **LinkedIn connection note**, 300 characters max with the count shown
-- 💬 **LinkedIn DM**, 80–150 words
-- 📧 **Cold email** with 3 subject lines and a 100–170 word body
-- 🔁 **Follow-up** to send after 5–7 days
-- 🧠 **Why this works:** which JD requirements each message targets
-
-**Finding the recruiter:** search LinkedIn for `"<Company>" recruiter` or `"<Company>" talent acquisition`, or check who posted the job. For hiring managers, look for `"Engineering Manager" <team name>`.
-
-### Step 6: Prepare for the interview
-```bash
-python3 -m jhb prep razorpay-backend
+careerpilot/
+  config.py      settings.yml + .env           db.py         SQLite schema, dedupe, status history
+  companies.py   companies.yml + aliases       notion.py     Notion pull/push (never reads passwords)
+  sources/       one adapter per job source    discover.py   discover → score → queue → notify
+  evaluate.py    match %, est. response %      apply.py      approval queue + browser assist + guards
+  inbox.py       Gmail status detection        notify.py     Gmail + WhatsApp
+  reports.py     Excel + Power BI              prep.py       interview prep (Claude)
+  assistant.py   chat agent (Claude + tools)   api.py        tool API (chat, MCP, Jarvis)
+  mcp_server.py  MCP server                    cli.py        command line
+app/streamlit_app.py   web app
+jhb/                   JD toolkit (skills extraction, recruiter messages); see docs/JD-TOOLKIT.md
+tests/                 38 tests incl. a real-browser test of the apply guardrails
 ```
-Writes `reports/razorpay-backend-interview-prep.md` with:
-- The likely interview rounds
-- 12 likely questions mapped to the JD
-- 6 STAR stories built **only from your CV**
-- Tough questions about your gaps, with honest answers
-- 5 sharp questions to ask them
 
-### Step 7: Track everything
+---
+
+## 🚀 Setup (15 minutes)
+
+### 1. Install
 ```bash
-python3 -m jhb track                          # show the pipeline
-python3 -m jhb track razorpay-backend applied # update a status
+git clone https://github.com/Sriraam070/CAREER_PILOT.git
+cd CAREER_PILOT
+python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+python -m playwright install chromium                  # for assisted applying
 ```
-Statuses: `evaluated` → `messaged` → `applied` → `screen` → `interview` → `offer` / `rejected` / `skipped`.
-`evaluate` and `message` update the tracker automatically. It's stored in `tracker.tsv`, which opens in Excel or Google Sheets.
+
+### 2. Your files (all git-ignored, they never leave your computer)
+```bash
+cp settings.example.yml settings.yml       # profile + preferences + automation switches
+cp companies.example.yml companies.yml     # your 47 Notion companies, already mapped to job sources
+cp cv.example.md cv.md                     # paste your CV as Markdown, keep a "## Technical Skills" heading
+cp .env.example .env                       # API keys (step 3)
+# put your resume PDF in the project folder as resume.pdf
+python -m careerpilot init
+```
+In **`settings.yml`**, set your name, email, phone, links, `years_experience`, and job keywords. Only non-sensitive fields go here: **don't** put CTC or notice period anywhere.
+
+### 3. Keys in `.env` (each one optional; add what you need)
+
+| Feature | Key(s) | Where to get it |
+|---|---|---|
+| Chat, AI interview prep | `ANTHROPIC_API_KEY` | [console.anthropic.com](https://console.anthropic.com) → API keys |
+| Jobs from companies without a public API (TCS, Infosys, Zoho…) | `ADZUNA_APP_ID`, `ADZUNA_APP_KEY` | [developer.adzuna.com](https://developer.adzuna.com) (free) |
+| Gmail notifications + inbox status tracking | `GMAIL_ADDRESS`, `GMAIL_APP_PASSWORD` | Google Account → Security → 2-Step Verification → **App passwords** → create "CareerPilot" |
+| WhatsApp (option A, reliable) | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM`, `WHATSAPP_TO` | [twilio.com](https://www.twilio.com) → Messaging → WhatsApp sandbox (send the join code from your phone first) |
+| WhatsApp (option B, free, personal) | `CALLMEBOT_APIKEY`, `WHATSAPP_TO` | [callmebot.com WhatsApp API](https://www.callmebot.com/blog/free-api-whatsapp-messages/) |
+| Notion sync | `NOTION_TOKEN`, `NOTION_DATABASE_ID` | See [Notion sync](#-notion-sync). The database ID is already filled in. |
+| Web app password | `CAREERPILOT_APP_PASSWORD` | Anything you choose |
+
+### 4. Check your job sources
+```bash
+python -m careerpilot doctor
+```
+This tests every company's source, prints ✓/✗, and marks `verified: true` in `companies.yml` for the ones that work. Fix any ✗ using [Job sources](#-job-sources--companiesyml).
+
+### 5. Turn on the automation you want
+Open the web app's **Settings** tab, or edit `settings.yml` → `automation:`. Everything is **off by default** except discovery and the approval queue.
+
+---
+
+## 📅 Daily use
+
+```bash
+python -m careerpilot ui          # opens http://127.0.0.1:8501
+```
+1. **Discover**: press "Discover now", or let the [daily schedule](#-scheduling-run-it-every-day) do it.
+2. **Approvals tab**: review the matches and ✅ approve or ❌ reject each one.
+3. **Apply**: for each approved job, run `python -m careerpilot assist <id>`. A browser opens with the form pre-filled; you fill the 🔒 fields and press **Submit**.
+4. **Dashboard**: watch your pipeline. Statuses update from your inbox, or edit them in the table.
+5. **Interview prep tab**: when an interview arrives, generate the prep pack.
+6. **Reports tab**: download the weekly Excel report, or refresh Power BI.
+
+Or just ask in **Chat**:
+> *"Which Super Dream companies have Python roles I match 60%+?"*
+> *"What skills should I learn this month?"*
+> *"What's my interview conversion rate?"*
+> *"I got an interview at Zoho for job 12, mark it."*
+> *"Make me a prep pack for job 7."*
+> *"Only show me jobs in Chennai and Bangalore from now on."*
+
+---
+
+## 🖥 The web app
+
+| Tab | What's there |
+|---|---|
+| 💬 **Chat** | Claude with 14 tools over your data. It shows which tools it used, and can't approve or submit applications. |
+| 📊 **Dashboard** | Applied / OA / interview / offer / rejected counts and response rate; most-requested skills (coloured by whether they're in your CV); positions by company; learn-next list; an editable pipeline table. |
+| 🗂 **Jobs** | Search and filter all jobs by match %, est. response %, gaps and link. Shows job details, queues a job, or lets you add a job by pasting a JD. |
+| ✅ **Approvals** | Approve or reject. Shows what will be pre-filled, the gaps, and the fields left for you. |
+| 📈 **Reports** | Pick a period (daily, weekly, monthly, all, or custom dates) and get the Excel file plus Power BI CSVs. |
+| 🎤 **Interview prep** | Prep pack per job, as Markdown you can download. |
+| 🏢 **Companies** | Your Notion list with tier, source and job count. |
+| ⚙️ **Settings** | Profile, preferences, thresholds, automation toggles and the audit log. |
+
+![Jobs](docs/jobs.png)
+
+---
+
+## ✅ Applying: the review-and-approve flow
+
+**Nothing is ever submitted without you.**
+
+```
+discovered → scored → (match ≥ 60% & passes filters) → pending ──you──► approved ──assist──► awaiting_user ──you submit──► Applied
+                                                              └──you──► rejected
+```
+
+When you run `python -m careerpilot assist <approval-id>`:
+
+- **It refuses** unless you approved that exact application, and unless you haven't already applied to that job.
+- **It opens the real application page** in a visible Chromium window.
+- **It fills only safe fields:** first/last/full name, email, phone, LinkedIn, GitHub/portfolio, city, and attaches `resume.pdf`.
+- **🔒 It never fills sensitive fields**, matched by label: CTC, salary, expected pay, notice period, joining date, declarations, "I agree / consent / terms", e-signature, initials, password, OTP, Aadhaar, PAN, passport, bank details, date of birth, age, gender, marital status, religion, caste, disability, visa/sponsorship, citizenship, references, current employer, and reason for leaving.
+- **✋ It leaves required questions it doesn't recognise** for you as well.
+- **It prints exactly what it filled and what it left**, then waits. You review and press **Submit**, then confirm in the terminal, or click **"I submitted it"** in the app.
+
+**Optional auto-submit** (off by default, and the chat can't turn it on): the bot may click Submit itself only when all of these are true:
+1. You switched it on in Settings.
+2. The form is a plain Greenhouse or Lever form, which needs no account.
+3. You approved that specific job.
+4. The form has **zero** sensitive and **zero** unknown required fields.
+
+`tests/test_browser.py` checks this behaviour in a real browser.
+
+**Why not fully automatic?** Workday, Oracle, Taleo and similar portals need an account per company plus legal declarations. LinkedIn and Naukri forbid bots in their terms, and automated applying there can get your account banned. So CareerPilot does the tedious 80% (finding, filtering, pre-filling and tracking) and leaves the legally meaningful click to you.
+
+**Duplicate protection:**
+- The same job is never stored twice, even when several sources list it. It's matched on company, normalised title and city, or the same URL.
+- A job you've applied to is never re-queued.
+
+---
+
+## 📈 Reports (Excel & Power BI)
+
+```bash
+python -m careerpilot report --period weekly              # daily | weekly | monthly | all
+python -m careerpilot report --period custom --start 2026-10-01 --end 2026-10-31
+```
+The Excel file goes to `reports/careerpilot-<period>-<from>_<to>.xlsx`:
+
+| Sheet | Contents |
+|---|---|
+| Summary | KPIs: jobs found, companies hiring, average match, applications, response, interview, offer and rejection rates, and the top 5 skills to learn |
+| Top Skills | Skill, category, jobs asking, % of jobs, whether it's in your CV. Bar chart. |
+| Companies | Open positions, role types, average match, years asked, salary, locations. Bar chart. |
+| Roles | Positions per role type (Backend, Full stack, Data/ML, DevOps…) and their top technologies |
+| Skill Gaps & Learning | Gaps ranked by demand, with where to learn each one and a project to prove it |
+| Jobs | Every job with match %, est. response %\*, years, salary, gaps, state, source and link |
+| Applications / Funnel / Trends / Rejections / Daily Discovery | Your pipeline, conversion funnel, weekly status trends, rejections by company, and new jobs per day |
+
+\* **Est. response %** is a transparent *heuristic estimate* of getting a reply (OA or interview). It's built from your company tier, skill match, years asked vs your experience, and how fresh the posting is. It's **not a prediction of an offer and not a guarantee**, and it's labelled that way everywhere.
+
+**Power BI:** `reports/powerbi/` contains `fact_jobs.csv`, `bridge_job_skill.csv`, `fact_applications.csv`, `fact_status_history.csv` and `dim_company.csv`.
+1. In Power BI Desktop: **Get Data → Folder** (or Text/CSV) → select `reports/powerbi`.
+2. Create relationships: `fact_jobs[job_id]` → `bridge_job_skill[job_id]`, `fact_jobs[company]` → `dim_company[company]`, and `fact_jobs[job_id]` → `fact_applications[job_id]`.
+3. Use slicers on `discovered_date` for daily, weekly or monthly views.
+4. Press **Refresh** after each daily run.
+
+---
+
+## 🔔 Notifications (Gmail & WhatsApp)
+
+Turn on `notify_email` and/or `notify_whatsapp` in Settings. You'll get:
+- **New matching jobs** (match ≥ `min_match_to_notify`, default 50%) after each discovery run.
+- **Status changes** (Applied, OA/Test, Interview, Offer, Rejected) from the inbox or when you change them.
+
+Each notification includes:
+- company and job title
+- location and posting date
+- match % and est. response %
+- required skills and your gaps
+- status, next step, interview time and deadline
+- a JD excerpt and the direct link
+
+The email is HTML; WhatsApp gets a compact version. Notifications never include sensitive data.
+
+---
+
+## 📬 Status tracking from your inbox
+
+With `check_inbox` on, CareerPilot reads Gmail over IMAP in **read-only** mode: it never sends, deletes or marks anything.
+
+It matches each email to an application by company name and classifies it:
+
+| Email says… | Status set | Next step added |
+|---|---|---|
+| "we received your application" | Applied | — |
+| HackerRank / Mettl / "online test" / assessment | OA/Test | "Complete the assessment" |
+| "invite you for an interview" / Calendly | Interview | It pulls the interview date if one is written, and suggests `careerpilot prep <job>` |
+| "unfortunately" / "not moving forward" | Rejected | "Ask for feedback; review gaps" |
+| "pleased to offer" | Offer | — |
+
+It also **imports jobs from job-alert emails** from LinkedIn, Naukri, Indeed, foundit, Instahyre, Glassdoor and Wellfound. That's the safe way to get LinkedIn jobs in:
+1. Create LinkedIn job alerts for "Python Developer, Chennai" and similar searches.
+2. CareerPilot reads the alert emails, adds the jobs, and scores them.
+
+```bash
+python -m careerpilot inbox --days 7
+```
+
+---
+
+## 🎤 Interview preparation
+
+```bash
+python -m careerpilot prep <job_id>      # or the Interview prep tab, or ask the chat
+```
+This uses Claude (Opus 5.5 by default) to write `reports/prep/<id>-<company>.md`. The pack covers:
+- how that company usually hires, with its typical rounds
+- topics mapped to JD lines, with your readiness for each
+- 10 mock technical Q&As answered from **your** experience
+- 12 named LeetCode/GFG problems by pattern (arrays, two pointers, sliding window, trees, graphs, DP, SQL)
+- system/low-level design prompts
+- 6 behavioural STAR answers
+- weak areas and a day-by-day 7-day plan
+- 5 questions to ask the interviewer
+
+It never invents experience: where your CV has nothing, it writes "[your example]".
+
+Without an API key, the command prints the full prompt so you can paste it into claude.ai.
+
+---
+
+## 🗂 Notion sync
+
+Your **Job Tracker** database (Company, COMPANY TYPE, Status, Job Name, Job URL, Date Applied…) is the master list of companies.
+
+**Setup (once):**
+1. Go to [notion.so/my-integrations](https://www.notion.so/my-integrations) → **New integration** → name it "CareerPilot", type *Internal*. Copy the secret into `NOTION_TOKEN`.
+2. Open your Job Tracker → **•••** → **Connections** → add "CareerPilot".
+3. Set `notion_sync: true` in Settings.
+
+```bash
+python -m careerpilot notion pull    # companies & tiers → companies.yml (new companies are added with Adzuna as the source)
+python -m careerpilot notion push    # one row per application: Company, Job Name, Job URL, Job Code, Status, Date Applied, COMPANY TYPE, Notes
+```
+
+🔒 **Your "Login ID" and "Password" columns are never read.** They're dropped the moment a page is fetched, and never stored, logged, sent or written. Even so, it's safer to keep portal passwords in a password manager (Bitwarden, 1Password, Google Password Manager) than in Notion.
+
+---
+
+## 🏢 Job sources & companies.yml
+
+`companies.yml` lists your 47 Notion companies. Each one has a tier, a job source (`ats`), the source's parameters, and optional `aliases` for how its name appears in postings.
+
+| `ats` | Companies (pre-mapped) | Notes |
+|---|---|---|
+| `workday` | Adobe, Salesforce, Walmart, PayPal, Mastercard, Comcast, Trimble, Autodesk | Uses the same public JSON endpoint the careers site uses |
+| `smartrecruiters` | Visa, Freshworks | Public postings API |
+| `amazon` | Amazon | amazon.jobs search API (India) |
+| `greenhouse` / `lever` / `ashby` | (add as needed) | Public job-board APIs; simple forms that support auto-submit |
+| `adzuna` | Everyone else (TCS, Infosys, Zoho, Google, Microsoft, Juspay…) | Searches Adzuna India by company name. Needs a free key. |
+| `manual` | — | No discovery; add jobs from the UI or with `add-job` |
+
+**Mappings are best-known guesses, marked `verified: false`.** Run `python -m careerpilot doctor` to test them.
+
+To fix or add a company, open any job on its careers site and read the URL:
+- `https://adobe.wd5.myworkdayjobs.com/external_experienced/job/...` → `ats: workday`, `host: adobe.wd5.myworkdayjobs.com`, `tenant: adobe`, `site: external_experienced`
+- `boards.greenhouse.io/<board>` → `ats: greenhouse`, `board: <board>`
+- `jobs.lever.co/<site>` → `ats: lever`, `site: <site>`
+- `jobs.smartrecruiters.com/<CompanyId>` → `ats: smartrecruiters`, `company_id: <CompanyId>`
+- `jobs.ashbyhq.com/<board>` → `ats: ashby`, `board: <board>`
+
+**Filters** live in `settings.yml → preferences`:
+- `keywords`: a title must contain one of these
+- `exclude_keywords`
+- `locations`
+- `max_years_required`
+- `min_salary_lpa`: applied only when a job states a salary
+- `company_tiers`
+- `min_match_to_queue` / `min_match_to_notify`
+
+---
+
+## ⏰ Scheduling (run it every day)
+
+`python -m careerpilot daily` runs each step independently, so one failure doesn't stop the rest:
+1. Notion pull
+2. Discover
+3. Inbox
+4. Notion push
+5. Daily report
+
+**macOS / Linux (cron), every day at 8:30 and 18:30:**
+```bash
+crontab -e
+30 8,18 * * * cd /path/to/CAREER_PILOT && .venv/bin/python -m careerpilot daily >> data/daily.log 2>&1
+```
+**Windows (Task Scheduler):** Create Basic Task → Daily, 8:30 → Action: *Start a program*. Then:
+- Program: `C:\path\to\CAREER_PILOT\.venv\Scripts\python.exe`
+- Arguments: `-m careerpilot daily`
+- Start in: `C:\path\to\CAREER_PILOT`
+
+Your computer needs to be on at that time. Alternatively, run it on any always-on machine or a small VPS.
+
+---
+
+## 🤖 Jarvis / Claude Desktop integration (MCP)
+
+CareerPilot is built as a module.
+- `careerpilot/api.py` exposes **14 tools** as plain Python functions plus JSON schemas (`api.TOOLS`, `api.call(name, args)`). Any assistant can register them.
+- `python -m careerpilot mcp` serves the same tools over **MCP**. Claude Desktop, Claude Code, or your future Jarvis can use them straight away.
+
+```json
+{ "mcpServers": { "careerpilot": {
+    "command": "/path/to/CAREER_PILOT/.venv/bin/python",
+    "args": ["-m", "careerpilot", "mcp"],
+    "cwd": "/path/to/CAREER_PILOT" } } }
+```
+(Claude Desktop: Settings → Developer → Edit Config.)
+
+Tools:
+- `search_jobs`, `job_details`, `list_companies`
+- `pipeline_stats`, `skill_insights`, `salary_info`
+- `update_status`, `add_job`
+- `get_preferences`, `set_preference`, `pending_approvals`
+- `run_discovery`, `make_report`, `interview_prep`
+
+Approving and submitting are **deliberately not exposed** to any AI.
+
+When you build Jarvis, have it start this MCP server, or `import careerpilot.api`. Nothing else needs to change.
+
+---
+
+## 🔒 Privacy & security
+
+- **Local-first.** Your data lives in `data/careerpilot.db` (SQLite) on your machine. The web app binds to `127.0.0.1` only, and you can add a password with `CAREERPILOT_APP_PASSWORD`.
+- **Never committed:** `.env`, `settings.yml`, `cv.md`, `companies.yml`, `resume.pdf`, `data/`, `reports/`, `jds/` and `output/` are all git-ignored.
+- **Sensitive data is never stored or filled:** CTC, expected CTC, notice period, declarations, consent, signatures, passwords, IDs and demographics. The bot doesn't hold these values at all, so it can't leak them.
+- **What goes to Claude:** only chat and prep requests are sent, and they contain your CV plus job data. Gmail and WhatsApp receive only job info and statuses.
+- **Guardrails are in code, not prompts.** The AI can't approve, can't submit, and can't turn on auto-submit.
+- **JDs and emails are untrusted data.** The prompts tell Claude to treat them as data, never as instructions (protection against prompt injection).
+- **Audit log.** Every discovery, approval, assist, submit, notification and settings change is recorded (Settings → Audit log).
 
 ---
 
 ## 📋 All commands
 
-| Command | What it does | Needs API key? | Output |
-|---|---|---|---|
-| `jhb add <url\|file\|->  [--name N]` | Save a JD | No | `jds/N.md` |
-| `jhb skills [--ai] [--top N]` | Most-asked skills across all JDs vs your CV | No (`--ai`: yes) | `reports/skills-report.md` + `.json` |
-| `jhb prep` | 4-week skill-gap plan + interview Qs | Yes* | `reports/prep-plan.md` |
-| `jhb prep <jd>` | Interview prep for one role | Yes* | `reports/<jd>-interview-prep.md` |
-| `jhb evaluate <jd>` | Fit grade + gap analysis | Yes* | `reports/<jd>-evaluation.md` |
-| `jhb message <jd> [--to recruiter\|hiring-manager\|referral] [--name N] [--channel linkedin\|email\|both]` | Outreach drafts | Yes* | `output/<jd>-<to>-message.md` |
-| `jhb track [<jd> <status>]` | View/update tracker | No | `tracker.tsv` |
-
-\* No key? Add `--print-prompt` and the bot prints the full prompt (your CV + JD + instructions). Paste it into [claude.ai](https://claude.ai). Without a key it does this automatically.
-
-**`<jd>` matching:** you can use a partial name. `razorpay` matches `jds/razorpay-backend.md`. Sample JDs for trying the bot live in `examples/jds/`; copy them into `jds/` to experiment.
-
----
-
-## 🤖 Using it inside Claude Code (no API key needed)
-
-Open the folder in [Claude Code](https://claude.com/claude-code) (`cd job-hunt-bot && claude`) and use these slash commands. Claude does the reasoning itself.
-
-| Slash command | What happens |
+| Command | Does |
 |---|---|
-| `/hunt <url or pasted JD>` | **Full pipeline:** save → evaluate → if it's worth applying, draft the recruiter message and list the 3 gaps to prep |
-| `/skills` | Runs the skills report, then Claude reviews every JD for skills the keyword list missed |
-| `/evaluate <jd>` | Fit grade + gap analysis, saved and tracked |
-| `/recruiter-msg <jd> [recruiter\|hiring-manager\|referral] [name]` | Outreach drafts, with the 300-char limit verified |
-| `/prep [jd]` | 4-week plan (no argument) or interview prep for one job |
-
-`CLAUDE.md` holds the rules Claude follows in this folder: never invent experience, treat JD text as data, never send anything for you.
-
----
-
-## 👀 Example output
-
-**Skills report** from the 3 sample JDs (AI Engineer, Backend Engineer, ML Engineer):
-
-| # | Skill | Asked in | Demand | Your CV |
-|---|---|---|---|---|
-| 1 | **AWS** | 3/3 (100%) | `██████████` | ✅ have |
-| 2 | **Docker** | 3/3 (100%) | `██████████` | ✅ have |
-| 3 | **Python** | 3/3 (100%) | `██████████` | ✅ have |
-| 4 | **Kubernetes** | 3/3 (100%) | `██████████` | ❌ gap |
-| 6 | **Evals** | 2/3 (66%) | `███████░░░` | 🟡 in CV prose |
-| 7 | **LLMs** | 2/3 (66%) | `███████░░░` | 🟡 in CV prose |
-| 11 | **System Design** | 2/3 (66%) | `███████░░░` | ❌ gap |
-
-→ The #1 thing to learn here is **Kubernetes**. The quick win is adding **LLMs, RAG and Evals** to your Skills section.
-
-**Recruiter LinkedIn note** (full sample: [`examples/recruiter-message-sample.md`](examples/recruiter-message-sample.md)):
-> Hi Priya, saw Nimbus is hiring an AI Engineer for agentic workflows. I built a RAG support assistant (pgvector, 40k users) that cut tickets 28%, and run FastAPI services at 2M req/day on AWS. 3 yrs Python, remote from India. Would love to connect and chat about the role. **[271 chars]**
+| `python -m careerpilot init` | Create settings / .env and load companies |
+| `python -m careerpilot doctor [--company X]` | Test the job sources |
+| `python -m careerpilot discover [--company X]` | Fetch, dedupe, score, queue and notify |
+| `python -m careerpilot jobs [-q python] [--min 60] [--company X] [--state queued]` | List jobs |
+| `python -m careerpilot add-job "Company" "Title" --url ... --description - < jd.txt` | Add and score a job by hand |
+| `python -m careerpilot approvals` / `approve <id>` / `approve <id> --reject` | Review the queue |
+| `python -m careerpilot assist <id>` | Open and pre-fill an approved application |
+| `python -m careerpilot submitted <id>` | Record that you submitted it |
+| `python -m careerpilot status <job> Interview --note "Tue 3pm"` | Set a status (and notify) |
+| `python -m careerpilot inbox [--days 7]` | Read Gmail for statuses and job alerts |
+| `python -m careerpilot report --period weekly` | Excel + Power BI |
+| `python -m careerpilot prep <job>` | Interview prep pack |
+| `python -m careerpilot notion pull` / `push` | Notion sync |
+| `python -m careerpilot daily` | The whole pipeline (for scheduling) |
+| `python -m careerpilot chat` / `ui` / `mcp` | Terminal chat / web app / MCP server |
+| `python -m pytest -q tests` | Run the 38 tests |
 
 ---
 
-## 🔬 How the skill analysis works
+## ⚠️ Limitations (read this)
 
-`jhb/skills.py` works without an LLM, so it's fast, free and gives the same result every time:
-
-1. **Vocabulary:** about 90 canonical skills in 8 categories, each with aliases. For example `k8s`/`EKS`/`GKE` → Kubernetes, `pgvector`/`Pinecone` → Vector DBs, `GitHub Actions`/`Jenkins` → CI/CD.
-2. **Section weighting:** lines under *Requirements / Must have / You have / Responsibilities* count **1.0**. Lines under *Nice to have / Bonus / Preferred*, or lines containing "is a plus", count **0.5**.
-3. **Demand:** each skill counts once per JD that asks for it, so one wordy JD can't skew the ranking.
-4. **CV status:**
-   - ✅ **have**: the skill is in your `## Skills` section
-   - 🟡 **mentioned**: it's in your experience or projects but not your Skills list (under-sold)
-   - ❌ **gap**: it's nowhere in your CV
-5. **Match %:** for each JD, the weighted share of its skills you cover (have = 1, mentioned = 0.6).
-6. **`--ai` mode:** Claude also pulls out required, nice-to-have and soft skills as JSON for each JD. That catches domain skills like "payments", "HIPAA" or "Figma" that aren't in the vocabulary.
+- **Job-source mappings aren't verified yet.** They were set up without network access to those sites. Run `doctor` once and fix any ✗. Companies change their careers platforms from time to time.
+- **LinkedIn and Naukri** aren't scraped, because their terms forbid it. Use their **job-alert emails**, which are imported automatically.
+- **Workday-style portals** (most big companies) require an account and declarations, so they stay in **assist** mode and you click Submit.
+- **Est. response %** is a rule-of-thumb estimate built from tier, match, experience fit and freshness. It isn't trained on outcomes. Treat it as a relative ranking, not a probability you can rely on.
+- **Salary data** appears only when a posting or Adzuna states it. Most Indian postings don't. For benchmarks, use AmbitionBox or Glassdoor.
+- **Inbox classification** uses keyword rules. Unusual wording may need a manual status change, which you can make in the Dashboard table.
 
 ---
 
-## 🗂 Project structure
-
-```
-job-hunt-bot/
-├── jhb/
-│   ├── cli.py            # all commands
-│   ├── skills.py         # skill vocabulary, extraction, CV matching
-│   └── llm.py            # Claude API wrapper + prompts
-├── .claude/commands/     # Claude Code slash commands (/hunt, /skills, ...)
-├── jds/                  # your job descriptions (.md / .txt)              (git-ignored)
-├── reports/              # skills report, evaluations, prep plans   (git-ignored)
-├── output/               # recruiter messages                       (git-ignored)
-├── examples/             # sample JDs + sample recruiter message
-├── cv.example.md         # CV template   → copy to cv.md       (git-ignored)
-├── profile.example.yml   # profile template → copy to profile.yml (git-ignored)
-├── CLAUDE.md             # rules for Claude Code
-├── jhb.sh                # shortcut: ./jhb.sh skills
-└── requirements.txt
-```
-
----
-
-## 🛠 Customising
-
-- **Add skills for your field** (design, marketing, finance…): add entries to `VOCAB` in `jhb/skills.py`:
-  ```python
-  "Figma": ("Design", [r"figma"]),
-  "SEO": ("Marketing", [r"\bseo\b", r"search engine optimi[sz]ation"]),
-  ```
-- **Change the model:** `export JHB_MODEL=claude-opus-5-5` gives the best quality. The default is `claude-sonnet-5-5`.
-- **Change message style:** edit the `tone` line in `profile.yml`, or edit `message_prompt()` in `jhb/llm.py`.
-- **JDs stay private:** `jds/` is git-ignored, so your target companies never get pushed.
-
----
-
-## 💡 Tips for landing interviews
-
-1. **Fix the under-sold skills first.** It takes 5 minutes and can raise your ATS match right away.
-2. **Apply to your top 5 match % first**, then work on the #1 gap for the rest.
-3. **Message the recruiter on the same day you apply.** The bot's note is under 300 characters so it fits a LinkedIn connection request.
-4. **Turn gaps into projects.** The prep plan gives you a mini-project for each one. Ship it to GitHub and mention it in your follow-up.
-5. **Follow up once after 5–7 days**, then move on. Track it all with `jhb track`.
-6. **Never claim a skill you don't have.** The bot won't invent anything, so don't add it by hand either.
-
----
-
-## ❓ FAQ / troubleshooting
+## 🛠 Troubleshooting
 
 | Problem | Fix |
 |---|---|
-| `Missing cv.md` | `cp cv.example.md cv.md` and paste in your CV |
-| `No JDs in jds/` | Add some with `jhb add <url>` or drop `.md`/`.txt` files in `jds/` |
-| `add <url>` saved almost nothing | The page is rendered with JavaScript. Copy the JD text and use `jhb add - --name company-role` |
-| Everything shows ❌ gap | Your CV needs a `## Skills` (or `## Technical Skills`) heading |
-| It printed a prompt instead of an answer | `ANTHROPIC_API_KEY` isn't set. Either set it, paste the prompt into claude.ai, or use Claude Code |
-| `JD 'x' not found; ambiguous` | Use a longer part of the file name |
-| `ModuleNotFoundError: anthropic` | `pip install -r requirements.txt` |
+| `doctor` shows ✗ 404 for a Workday company | The site name changed. Open a job on their careers page and copy `host` / `tenant` / `site` from the URL. |
+| `ADZUNA_APP_ID / ADZUNA_APP_KEY not set` | Add the free keys, or set those companies to `ats: manual` |
+| Chat says it needs `ANTHROPIC_API_KEY` | Add it to `.env`. Everything else works without it. |
+| Gmail login fails | Use an **App password** (needs 2-Step Verification), not your normal password |
+| WhatsApp via Twilio not arriving | Send the sandbox join code from your phone to the Twilio number first |
+| `assist` says "Approve this application first" | Approve it in the Approvals tab, or with `approve <id>` |
+| Playwright can't find a browser | `python -m playwright install chromium`, or set `CAREERPILOT_CHROMIUM=/path/to/chrome` |
+| Everything shows as a skill gap | `cv.md` needs a `## Technical Skills` (or `## Skills`) heading |
 
 ---
 
-## 🔒 Privacy and guardrails
-- Your CV, profile, reports, messages and tracker are **git-ignored**.
-- Claude only uses facts from your `cv.md` and never invents experience or numbers.
-- JD text is treated as untrusted data, which protects against prompt injection.
-- **Nothing is ever sent or submitted automatically.** You review every message.
+## 🧰 JD toolkit
 
-## 🙏 Credits
-Inspired by [career-ops](https://github.com/career-ops-hq/career-ops) by @santifer. Built with [Claude](https://claude.com).
+The original toolkit is still here and still works:
+- the most-asked-skills report across JDs you paste in
+- per-JD fit grading
+- recruiter, hiring-manager and referral messages
+- 4-week prep plans
+- Claude Code slash commands
+
+See **[docs/JD-TOOLKIT.md](docs/JD-TOOLKIT.md)**.
+
+Built with [Claude](https://claude.com) · inspired by [career-ops](https://github.com/career-ops-hq/career-ops)

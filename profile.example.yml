@@ -1,0 +1,13 @@
+# What you want. The bot uses this to judge fit and personalise messages.
+name: Your Name
+target_roles: [Backend Engineer, AI Engineer, ML Engineer]
+seniority: mid            # junior | mid | senior | staff
+locations: [Remote, Bangalore, Chennai]
+work_auth: "Indian citizen; open to relocation with visa sponsorship"
+salary_target: "₹30–40 LPA / $120k+ remote"
+notice_period: "30 days"
+deal_breakers: [unpaid trial work, on-call >1 week/month]
+strengths_to_highlight:
+  - shipped LLM features to production
+  - Python backend at scale
+tone: "direct, warm, concise"

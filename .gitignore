@@ -1,0 +1,7 @@
+.env
+cv.md
+profile.yml
+tracker.tsv
+output/
+reports/
+__pycache__/

@@ -55,7 +55,7 @@ You can skip this. The skills report works without a key, and every other featur
 
 ### 4. Add jobs and run
 ```bash
-rm jds/example-*.md                                    # remove the sample JDs
+                                                       # (samples live in examples/jds/)
 python3 -m jhb add https://company.com/careers/ai-engineer
 python3 -m jhb skills                                  # most-asked skills + your gaps
 python3 -m jhb message ai-engineer --to recruiter      # recruiter message
@@ -181,7 +181,7 @@ Statuses: `evaluated` → `messaged` → `applied` → `screen` → `interview` 
 
 \* No key? Add `--print-prompt` and the bot prints the full prompt (your CV + JD + instructions). Paste it into [claude.ai](https://claude.ai). Without a key it does this automatically.
 
-**`<jd>` matching:** you can use a partial name. `nimbus` matches `jds/example-ai-engineer-nimbus.md`.
+**`<jd>` matching:** you can use a partial name. `razorpay` matches `jds/razorpay-backend.md`. Sample JDs for trying the bot live in `examples/jds/`; copy them into `jds/` to experiment.
 
 ---
 
@@ -247,10 +247,10 @@ job-hunt-bot/
 │   ├── skills.py         # skill vocabulary, extraction, CV matching
 │   └── llm.py            # Claude API wrapper + prompts
 ├── .claude/commands/     # Claude Code slash commands (/hunt, /skills, ...)
-├── jds/                  # your job descriptions (.md / .txt)
+├── jds/                  # your job descriptions (.md / .txt)              (git-ignored)
 ├── reports/              # skills report, evaluations, prep plans   (git-ignored)
 ├── output/               # recruiter messages                       (git-ignored)
-├── examples/             # sample outputs
+├── examples/             # sample JDs + sample recruiter message
 ├── cv.example.md         # CV template   → copy to cv.md       (git-ignored)
 ├── profile.example.yml   # profile template → copy to profile.yml (git-ignored)
 ├── CLAUDE.md             # rules for Claude Code
@@ -269,7 +269,7 @@ job-hunt-bot/
   ```
 - **Change the model:** `export JHB_MODEL=claude-opus-5-5` gives the best quality. The default is `claude-sonnet-5-5`.
 - **Change message style:** edit the `tone` line in `profile.yml`, or edit `message_prompt()` in `jhb/llm.py`.
-- **Keep JDs private:** add `jds/` to `.gitignore` if you don't want them on GitHub.
+- **JDs stay private:** `jds/` is git-ignored, so your target companies never get pushed.
 
 ---
 

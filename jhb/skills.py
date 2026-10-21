@@ -37,6 +37,11 @@ VOCAB = {
     # Backend
     "Node.js": ("Backend", [r"node\.?js", r"\bnode\b"]),
     "Django": ("Backend", [r"django"]),
+    "Django REST Framework": ("Backend", [r"django rest", r"\bdrf\b"]),
+    "Celery": ("Backend", [r"celery"]),
+    "WebSockets": ("Backend", [r"web ?sockets?"]),
+    "Async Python": ("Backend", [r"async(hronous|io)?\b"]),
+    "ORM": ("Backend", [r"\borms?\b"]),
     "Flask": ("Backend", [r"\bflask\b"]),
     "FastAPI": ("Backend", [r"fastapi"]),
     "Spring": ("Backend", [r"spring( boot)?\b"]),
@@ -103,6 +108,7 @@ VOCAB = {
     "Problem Solving": ("Soft Skills", [r"problem[- ]solv", r"analytical"]),
     "Stakeholder Management": ("Soft Skills", [r"stakeholder", r"customer-facing", r"client-facing"]),
     "Product Sense": ("Soft Skills", [r"product sense", r"product mindset", r"user empathy", r"customer obsess"]),
+    "SaaS": ("Soft Skills", [r"\bsaas\b"]),
     "Startup Experience": ("Soft Skills", [r"startup", r"fast-paced", r"ambiguity"]),
 }
 
